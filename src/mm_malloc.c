@@ -42,8 +42,33 @@ void *my_malloc(size_t size) {
 }
 
 void my_free(void *ptr) {
+    // Obtener metadata
+    block_meta *meta = (block_meta *)(ptr - META_SIZE);
+
     // TODO: Marcar el bloque como libre.
+    meta->free = 1;
+
     // TODO: Fusionar bloques adyacentes (Coalescing).
+    block_meta *current = (block_meta *)base;
+    if ((meta->next != NULL) && meta->next->free)
+    {
+        meta->size += meta->next->size;
+        meta->next = meta->next->next;
+    }
+
+    while (current != NULL)
+    {
+        if (current->next == meta)
+        {
+            if(current->free)
+            {
+                current->size += meta->size;
+                current->next = meta->next;
+            }
+            break;
+        }
+        current = current->next; // Avanzar al siguiente bloque
+    }
 }
 
 void *my_calloc(size_t nmemb, size_t size) {
