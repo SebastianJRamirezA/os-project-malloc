@@ -3,7 +3,6 @@
 
 // Inicio de la lista enlazada del heap
 void *base = NULL;
-int a = 0;
 
 void *my_malloc(size_t size) {
     // TODO: Implementar First-Fit o Best-Fit
@@ -17,7 +16,7 @@ void *my_malloc(size_t size) {
         {
             // Encontramos un bloque libre adecuado
             current->free = 0; // Marcar como ocupado
-            return (void *)(current + META_SIZE); // Retornar el espacio después de la metadata
+            return (void *)(current + 1); // Retornar el espacio después de la metadata
         }
         current = current->next; // Avanzar al siguiente bloque
     }
@@ -34,8 +33,7 @@ void *my_malloc(size_t size) {
     void *ptr = start_ptr + META_SIZE;
 
     // Crear metadata del bloque y almacenarla al inicio del bloque asignado
-    block_meta meta = {size, base, 0, a};
-    a++;
+    block_meta meta = {size, base, 0, 42};
     base = start_ptr;
     *(block_meta *)start_ptr = meta;
     return ptr;
