@@ -6,37 +6,57 @@ void *base = NULL;
 
 void *my_malloc(size_t size) {
     // TODO: Implementar First-Fit o Best-Fit
-    // 1. Verificar si hay un bloque libre del tamaño adecuado.
-    // 2. Si no, pedir espacio al OS con sbrk().
 
+    // 1. Verificar si hay un bloque libre del tamaño adecuado.
     block_meta *current = (block_meta *)base;
+    block_meta *last = NULL;
+
+    // 1. Buscar bloque libre
     while (current != NULL)
     {
         if (current->free && (current->size >= size))
         {
-            // Encontramos un bloque libre adecuado
-            current->free = 0; // Marcar como ocupado
-            return (void *)(current + 1); // Retornar el espacio después de la metadata
+            current->free = 0;
+
+            // Intentar fragmentar si sobra espacio suficiente para otro bloque + metadata
+            if (current->size >= size + META_SIZE + 8)
+            {
+                block_meta *next = (block_meta *)((char *)current + META_SIZE + size);
+                next->size = current->size - size - META_SIZE;
+                next->next = current->next;
+                next->free = 1;
+
+                current->size = size;
+                current->next = next;
+            }
+            return (void *)(current + 1);
         }
-        current = current->next; // Avanzar al siguiente bloque
+        last = current;
+        current = current->next;
     }
 
-    // Ubicar inicio del nuevo bloque de memoria y solicitarlo al sistema operativo
-    void *start_ptr = sbrk(0);
+    // 2. Si no, pedir espacio al OS con sbrk().
+    block_meta *new_block = sbrk(0);
     if (sbrk(size + META_SIZE) == (void *)-1)
     {
         perror("Error al asignar memoria");
         return NULL;
     }
 
-    // Apuntador al inicio del bloque a retornar
-    void *ptr = start_ptr + META_SIZE;
+    new_block->size = size;
+    new_block->next = NULL;
+    new_block->free = 0;
 
-    // Crear metadata del bloque y almacenarla al inicio del bloque asignado
-    block_meta meta = {size, base, 0, 42};
-    base = start_ptr;
-    *(block_meta *)start_ptr = meta;
-    return ptr;
+    if (base == NULL)
+    {
+        base = new_block;
+    }
+    else if (last != NULL)
+    {
+        last->next = new_block;
+    }
+
+    return (void *)(new_block + 1);
 }
 
 void my_free(void *ptr) {
@@ -48,19 +68,21 @@ void my_free(void *ptr) {
 
     // TODO: Fusionar bloques adyacentes (Coalescing).
     block_meta *current = (block_meta *)base;
+    // Fusionar siguiente bloque
     if ((meta->next != NULL) && meta->next->free)
     {
-        meta->size += meta->next->size;
+        meta->size += meta->next->size + META_SIZE;
         meta->next = meta->next->next;
     }
 
+    // Fusionar bloque anterior
     while (current != NULL)
     {
         if (current->next == meta)
         {
             if(current->free)
             {
-                current->size += meta->size;
+                current->size += meta->size + META_SIZE;
                 current->next = meta->next;
             }
             break;
