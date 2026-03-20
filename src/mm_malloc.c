@@ -93,7 +93,9 @@ void my_free(void *ptr) {
 
 void *my_calloc(size_t nmemb, size_t size) {
     // TODO: Usar my_malloc y luego memset a 0.
-    return NULL;
+    void *res = my_malloc(nmemb * size);
+    memset(res, 0, nmemb * size);
+    return res;
 }
 
 void *my_realloc(void *ptr, size_t size) {
