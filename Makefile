@@ -8,7 +8,7 @@ CC = gcc
 # -Werror: Trata los warnings como errores (Código sucio no compila)
 # -g: Añade símbolos de debug para GDB/Valgrind
 # -Iinclude: Busca headers en la carpeta include/
-CFLAGS = -Wall -Wextra -g -Iinclude -std=c11 -D_DEFAULT_SOURCE
+CFLAGS = -Wall -Wextra -Werror -g -Iinclude -std=c11 -D_DEFAULT_SOURCE
 
 # Directorios
 SRC_DIR = src
