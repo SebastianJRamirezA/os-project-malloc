@@ -1,4 +1,5 @@
 #include <unistd.h> // Para sbrk
+#include <string.h> // Para memcpy y memset
 #include "mm_malloc.h"
 
 // Inicio de la lista enlazada del heap
@@ -38,10 +39,7 @@ void *my_malloc(size_t size) {
     // 2. Si no, pedir espacio al OS con sbrk().
     block_meta *new_block = sbrk(0);
     if (sbrk(size + META_SIZE) == (void *)-1)
-    {
-        perror("Error al asignar memoria");
         return NULL;
-    }
 
     new_block->size = size;
     new_block->next = NULL;
