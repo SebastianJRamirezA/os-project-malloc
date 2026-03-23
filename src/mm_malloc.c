@@ -11,6 +11,9 @@ void *my_malloc(size_t size) {
     if(size == 0)
         return NULL;
 
+    // Alinear el tamaño a multiplos de 8
+    size = (size + 7) & ~7;
+
     // 1. Verificar si hay un bloque libre del tamaño adecuado.
     block_meta *current = (block_meta *)base;
     block_meta *last = NULL;
@@ -117,12 +120,14 @@ void *my_realloc(void *ptr, size_t size) {
         my_free(ptr);
         return NULL;
     }
-    
-    if(meta->size == size)
-        return ptr;
+
+    // Alinear el tamaño a multiplos de 8
+    size = (size + 7) & ~7;
 
     // Obtener metadata
     block_meta *meta = (block_meta *)(ptr - META_SIZE);
+    if(meta->size == size)
+        return ptr;
 
     if(meta->size > size) {
         // Intentar fragmentar si sobra espacio suficiente para otro bloque + metadata
