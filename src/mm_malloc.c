@@ -7,6 +7,9 @@ void *base = NULL;
 
 void *my_malloc(size_t size) {
     // TODO: Implementar First-Fit o Best-Fit
+    // Verificar si el tamaño es 0, en ese caso devolver NULL.
+    if(size == 0)
+        return NULL;
 
     // 1. Verificar si hay un bloque libre del tamaño adecuado.
     block_meta *current = (block_meta *)base;
@@ -58,6 +61,9 @@ void *my_malloc(size_t size) {
 }
 
 void my_free(void *ptr) {
+    if (ptr == NULL)
+        return;
+
     // Obtener metadata
     block_meta *meta = (block_meta *)(ptr - META_SIZE);
 
@@ -103,6 +109,15 @@ void *my_calloc(size_t nmemb, size_t size) {
 
 void *my_realloc(void *ptr, size_t size) {
     // TODO: Redimensionar el bloque o moverlo a uno nuevo.
+
+    if (ptr == NULL)
+        return my_malloc(size);
+
+    if (size == 0) {
+        my_free(ptr);
+        return NULL;
+    }
+
     // Obtener metadata
     block_meta *meta = (block_meta *)(ptr - META_SIZE);
 
