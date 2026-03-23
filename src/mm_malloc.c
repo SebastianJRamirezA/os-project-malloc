@@ -101,7 +101,7 @@ void *my_realloc(void *ptr, size_t size) {
     // Obtener metadata
     block_meta *meta = (block_meta *)(ptr - META_SIZE);
 
-    if(meta->size < size) {
+    if(meta->size > size) {
         meta->size = size;
         return ptr;
     }
