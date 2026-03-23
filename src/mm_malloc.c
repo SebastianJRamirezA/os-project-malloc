@@ -117,6 +117,9 @@ void *my_realloc(void *ptr, size_t size) {
         my_free(ptr);
         return NULL;
     }
+    
+    if(meta->size == size)
+        return ptr;
 
     // Obtener metadata
     block_meta *meta = (block_meta *)(ptr - META_SIZE);
