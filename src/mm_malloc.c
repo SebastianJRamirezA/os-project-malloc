@@ -107,6 +107,15 @@ void *my_realloc(void *ptr, size_t size) {
     block_meta *meta = (block_meta *)(ptr - META_SIZE);
 
     if(meta->size > size) {
+        // Intentar fragmentar si sobra espacio suficiente para otro bloque + metadata
+        if (meta->size >= size + META_SIZE + 8)
+        {
+            block_meta *next = (block_meta *)((char *)meta + META_SIZE + size);
+            next->size = meta->size - size - META_SIZE;
+            next->next = meta->next;
+            next->free = 1;
+            meta->next = next;
+        }
         meta->size = size;
         return ptr;
     }
@@ -115,7 +124,7 @@ void *my_realloc(void *ptr, size_t size) {
     // Verificar si my_malloc devolvió NULL antes de llamar a memset
     if (new_ptr == NULL)
         return NULL;
-    
+
     memcpy(new_ptr, ptr, meta->size);
     my_free(ptr);
     return new_ptr;
